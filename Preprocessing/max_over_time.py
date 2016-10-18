@@ -50,6 +50,7 @@ cmap = mcolors.LinearSegmentedColormap.from_list('mycmap', colors, N=10)
 #save numpy array
 path = os.getcwd().split("\\")[-1]
 max = np.amax(imgs,axis=0)
+masks = masks.sum(axis=0)
 print "min:",np.amin(max)
 print "max:",np.amax(max)
 print "mean:",np.mean(max)
