@@ -48,8 +48,8 @@ zero_coords_test = zip(zeros_test[0],zeros_test[1],zeros_test[2])
 
 #conv net settings
 convolutional_layers = 6
-feature_maps = [1,40,40,80,80,160,160]
-filter_shapes = [(3,3),(3,3),(3,3),(3,3),(3,3),(3,3)]
+feature_maps = [1,40,40,40,80,80,80]
+filter_shapes = [(5,5),(5,5),(3,3),(3,3),(3,3),(3,3)]
 feedforward_layers = 1
 feedforward_nodes = [2000]
 classes = 1
@@ -100,12 +100,12 @@ class neural_network(object):
         self.convolutional_layers = []
         self.convolutional_layers.append(convolutional_layer(self.input,feature_maps[1],feature_maps[0],filter_shapes[0][0],filter_shapes[0][1]))
         for i in range(1,convolutional_layers):
-            if i==2 or i==4:
+            if i==3:
                 self.convolutional_layers.append(convolutional_layer(self.convolutional_layers[i-1].output,feature_maps[i+1],feature_maps[i],filter_shapes[i][0],filter_shapes[i][1],maxpool=(2,2)))
             else:
                 self.convolutional_layers.append(convolutional_layer(self.convolutional_layers[i-1].output,feature_maps[i+1],feature_maps[i],filter_shapes[i][0],filter_shapes[i][1]))
         self.feedforward_layers = []
-        self.feedforward_layers.append(feedforward_layer(self.convolutional_layers[-1].output.flatten(2),10240,feedforward_nodes[0]))
+        self.feedforward_layers.append(feedforward_layer(self.convolutional_layers[-1].output.flatten(2),20480,feedforward_nodes[0]))
         for i in range(1,feedforward_layers):
             self.feedforward_layers.append(feedforward_layer(self.feedforward_layers[i-1].output,feedforward_nodes[i-1],feedforward_nodes[i]))
         self.output_layer = feedforward_layer(self.feedforward_layers[-1].output,feedforward_nodes[-1],classes)
