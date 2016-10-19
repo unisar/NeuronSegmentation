@@ -24,13 +24,15 @@ X_temp = np.array(X)
 X_flattened = scaler.fit_transform(X_temp.reshape(X_temp.shape[0],X_temp.shape[1]*X_temp.shape[2]))
 X = X_flattened.reshape(X_temp.shape[0],X_temp.shape[1],X_temp.shape[2])
 
+#pad by 16 to allow for testing of edge pixels
+X = np.pad(X,((0,0),(16,16),(16,16)),'constant')
+y = np.pad(y,((0,0),(16,16),(16,16)),'constant')
+
 #test/train split
-X_train = X[:-2]
-y_train = np.array(y[:-2])
-y_train[y_train!=0]==1
-X_test = X[-2:]
-y_test = np.array(y[-2:])
-y_test[y_test!=0]==1
+X_train = X[2:]
+y_train = np.array(y[2:])
+X_test = X[:2]
+y_test = np.array(y[:2])
 
 nonzeros_train = np.nonzero(y_train)
 zeros_train = np.where(y_train[:,16:528,16:528]==0)
