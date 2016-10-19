@@ -1,3 +1,8 @@
+'''
+Saves numpy array of max pixel values across all images, padded by 16 on each side
+Also saves the mask that indicates which pixels belong to ROI, padded by 16 on each side
+'''
+
 import json
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
@@ -5,6 +10,7 @@ from numpy import array, zeros
 from scipy.misc import imread
 from glob import glob
 import numpy as np
+import os
 
 # load the images
 files = sorted(glob('images/*.tiff'))
@@ -32,7 +38,6 @@ def outline(mask):
     r_vert = np.append(np.diff(mask[:,:,::-1],axis=2),np.zeros((mask.shape[0],mask.shape[1],1)),2)[:,:,::-1]
     r_vert[r_vert!=0]==1
     comb = horz+vert+r_horz+r_vert
-    comb[comb!=0]==1
     return comb
 
 outlines = outline(masks)
@@ -41,10 +46,25 @@ outlines = outline(masks)
 colors = [(1,0,0,i) for i in np.linspace(0,1,3)]
 cmap = mcolors.LinearSegmentedColormap.from_list('mycmap', colors, N=10)
 
+#generate mean intensity pixels over time
 sum = np.sum(imgs,axis=0)
 mean = np.mean(sum)
 std = np.std(sum)
-sum[sum > (mean + 3*std)] = mean + 3*std
+print "min:",np.amin(sum)
+print "max:",np.amax(sum)
+print "mean:",mean
+print "std:",std
+sum[sum > (mean + 3*std)] = mean + 3*std   #clip pixels above 99 percentile intensity
+sum = sum/mean
+
+#flatten regions of interest
+masks = masks.sum(axis=0)
+masks[masks!=0]==1
+
+#save numpy array
+path = os.getcwd().split("\\")[-1]
+np.save("X_"+path,sum)
+np.save("y_"+path,masks)
 
 # show the outputs
 plt.figure()

@@ -38,7 +38,6 @@ def outline(mask):
     r_vert = np.append(np.diff(mask[:,:,::-1],axis=2),np.zeros((mask.shape[0],mask.shape[1],1)),2)[:,:,::-1]
     r_vert[r_vert!=0]==1
     comb = horz+vert+r_horz+r_vert
-    comb[comb!=0]==1
     return comb
 
 outlines = outline(masks)
@@ -47,18 +46,23 @@ outlines = outline(masks)
 colors = [(1,0,0,i) for i in np.linspace(0,1,3)]
 cmap = mcolors.LinearSegmentedColormap.from_list('mycmap', colors, N=10)
 
-#save numpy array
-path = os.getcwd().split("\\")[-1]
+#generate max intensity pixels over time
 max = np.amax(imgs,axis=0)
-masks = masks.sum(axis=0)
 print "min:",np.amin(max)
 print "max:",np.amax(max)
 print "mean:",np.mean(max)
 print "std:",np.std(max)
-np.save("X_"+path,np.pad(max,16,'constant'))
-np.save("y_"+path,np.pad(masks,16,'constant'))
 
-# show the outputs
+#flatten regions of interest
+masks = masks.sum(axis=0)
+masks[masks!=0]==1
+
+#save numpy array
+path = os.getcwd().split("\\")[-1]
+np.save("X_"+path,max)
+np.save("y_"+path,masks)
+
+#show the outputs
 plt.figure()
 plt.subplot(1, 2, 1)
 plt.imshow(max, cmap='gray')
