@@ -9,8 +9,8 @@ import glob
 import random
 
 #load data
-X_files = sorted(glob.glob('../preprocessing/X_*'))
-y_files = sorted(glob.glob('../preprocessing/y_*'))
+X_files = sorted(glob.glob('../data/train/X_*'))
+y_files = sorted(glob.glob('../data/train/y_*'))
 
 X = []
 y = []
