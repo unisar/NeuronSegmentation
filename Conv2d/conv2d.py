@@ -25,8 +25,8 @@ X_flattened = scaler.fit_transform(X_temp.reshape(X_temp.shape[0],X_temp.shape[1
 X = X_flattened.reshape(X_temp.shape[0],X_temp.shape[1],X_temp.shape[2])
 
 #pad by 16 to allow for testing of edge pixels
-X = np.pad(X,((0,0),(16,16),(16,16)),'constant')
-y = np.pad(y,((0,0),(16,16),(16,16)),'constant')
+X = np.pad(X,((0,0),(20,20),(20,20)),'constant')
+y = np.pad(y,((0,0),(20,20),(20,20)),'constant')
 
 #test/train split
 X_train = X[2:]
@@ -35,16 +35,16 @@ X_test = X[:2]
 y_test = np.array(y[:2])
 
 nonzeros_train = np.nonzero(y_train)
-zeros_train = np.where(y_train[:,16:528,16:528]==0)
+zeros_train = np.where(y_train[:,20:532,20:532]==0)
 for i in zeros_train[1:]:
-    i += 16
+    i += 20
 nonzero_coords_train = zip(nonzeros_train[0],nonzeros_train[1],nonzeros_train[2])
 zero_coords_train = zip(zeros_train[0],zeros_train[1],zeros_train[2])
 
 nonzeros_test = np.nonzero(y_test)
-zeros_test = np.where(y_test[:,16:528,16:528]==0)
+zeros_test = np.where(y_test[:,20:532,20:532]==0)
 for i in zeros_test[1:]:
-    i += 16
+    i += 20
 nonzero_coords_test = zip(nonzeros_test[0],nonzeros_test[1],nonzeros_test[2])
 zero_coords_test = zip(zeros_test[0],zeros_test[1],zeros_test[2])
 
@@ -107,7 +107,7 @@ class neural_network(object):
             else:
                 self.convolutional_layers.append(convolutional_layer(self.convolutional_layers[i-1].output,feature_maps[i+1],feature_maps[i],filter_shapes[i][0],filter_shapes[i][1]))
         self.feedforward_layers = []
-        self.feedforward_layers.append(feedforward_layer(self.convolutional_layers[-1].output.flatten(2),20480,feedforward_nodes[0]))
+        self.feedforward_layers.append(feedforward_layer(self.convolutional_layers[-1].output.flatten(2),32000,feedforward_nodes[0]))
         for i in range(1,feedforward_layers):
             self.feedforward_layers.append(feedforward_layer(self.feedforward_layers[i-1].output,feedforward_nodes[i-1],feedforward_nodes[i]))
         self.output_layer = feedforward_layer(self.feedforward_layers[-1].output,feedforward_nodes[-1],classes)
@@ -150,13 +150,13 @@ class neural_network(object):
         for i in range(batch_size):
             if random.random() < .5:
                 (a,b,c) = random.choice(nonzero_coords_train)
-                input.append(X[a,b-16:b+16,c-16:c+16])
+                input.append(X[a,b-20:b+20,c-20:c+20])
                 target.append(y[a,b,c])
             else:
                 (a,b,c) = random.choice(zero_coords_train)
-                input.append(X[a,b-16:b+16,c-16:c+16])
+                input.append(X[a,b-20:b+20,c-20:c+20])
                 target.append(y[a,b,c])
-        input = np.array(input).reshape(batch_size,1,32,32)
+        input = np.array(input).reshape(batch_size,1,40,40)
         target = np.array(target).reshape(len(target),1)
         return self.propogate(input,target) 
         
@@ -166,13 +166,13 @@ class neural_network(object):
         for i in range(batch_size):
             if random.random() < .5:
                 (a,b,c) = random.choice(nonzero_coords_test)
-                input.append(X[a,b-16:b+16,c-16:c+16])
+                input.append(X[a,b-20:b+20,c-20:c+20])
                 target.append(y[a,b,c])
             else:
                 (a,b,c) = random.choice(zero_coords_test)
-                input.append(X[a,b-16:b+16,c-16:c+16])
+                input.append(X[a,b-20:b+20,c-20:c+20])
                 target.append(y[a,b,c])
-        input = np.array(input).reshape(batch_size,1,32,32)
+        input = np.array(input).reshape(batch_size,1,40,40)
         target = np.array(target).reshape(len(target),1)
         prediction = self.classify(input)
         label = np.around(prediction)
@@ -185,7 +185,7 @@ nn = neural_network(convolutional_layers,feature_maps,filter_shapes,feedforward_
 
 batch_size = 100
 
-for i in range(50000):
+for i in range(25000):
     cost = nn.train(X_train,y_train,batch_size)
     sys.stdout.write("step %i loss: %f \r" % (i+1, cost))
     sys.stdout.flush()
