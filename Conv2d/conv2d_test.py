@@ -9,30 +9,46 @@ import glob
 import random
 
 #load data
-X_files = sorted(glob.glob('../data/train/X_*'))
-y_files = sorted(glob.glob('../data/train/y_*'))
+X_train_files = sorted(glob.glob('../data/train/X_*'))
+y_train_files = sorted(glob.glob('../data/train/y_*'))
+X_test_files = sorted(glob.glob('../data/test/X_*'))
 
-X = []
-y = []
-for i in range(len(X_files)):
-    X.append(np.load(X_files[i]))
-    y.append(np.load(y_files[i]))
+X_train = []
+y_train = []
+X_test = []
+
+for i in range(len(X_train_files)):
+    array = np.load(X_train_files[i])
+    mask = np.load(y_train_files[i])
+    #if image is not 512x512, pad with zeros
+    if array.shape != (512,512):
+        hdiff = 512 - array.shape[0]
+        vdiff = 512 - array.shape[1]
+        array = np.pad(array,((0,hdiff),(0,vdiff)),'constant')
+        mask = np.pad(mask,((0,hdiff),(0,vdiff)),'constant')
+    X_train.append(array)
+    y_train.append(mask)
+
+for i in range(len(X_test_files)):
+    array = np.load(X_test_files[i])
+    #if image is not 512x512, pad with zeros
+    if array.shape != (512,512):
+        hdiff = 512 - array.shape[0]
+        vdiff = 512 - array.shape[1]
+        array = np.pad(array,((0,hdiff),(0,vdiff)),'constant')
+    X_test.append(array)
 
 #standard scaler
 scaler = StandardScaler()
-X_temp = np.array(X)
+X_temp = np.concatenate((np.array(X_train),np.array(X_test)))
 X_flattened = scaler.fit_transform(X_temp.reshape(X_temp.shape[0],X_temp.shape[1]*X_temp.shape[2]))
-X = X_flattened.reshape(X_temp.shape[0],X_temp.shape[1],X_temp.shape[2])
+X_train = X_flattened[:len(X_train),:].reshape(len(X_train),X_temp.shape[1],X_temp.shape[2])
+X_test = X_flattened[len(X_train):,:].reshape(len(X_test),X_temp.shape[1],X_temp.shape[2])
 
 #pad by 16 to allow for testing of edge pixels
-X = np.pad(X,((0,0),(20,20),(20,20)),'constant')
-y = np.pad(y,((0,0),(20,20),(20,20)),'constant')
-
-#test/train split
-X_train = X[2:]
-y_train = np.array(y[2:])
-X_test = X[:2]
-y_test = np.array(y[:2])
+X_train = np.pad(X_train,((0,0),(20,20),(20,20)),'constant')
+y_train = np.pad(y_train,((0,0),(20,20),(20,20)),'constant')
+X_test = np.pad(X_test,((0,0),(20,20),(20,20)),'constant')
 
 nonzeros_train = np.nonzero(y_train)
 zeros_train = np.where(y_train[:,20:532,20:532]==0)
@@ -40,13 +56,6 @@ for i in zeros_train[1:]:
     i += 20
 nonzero_coords_train = zip(nonzeros_train[0],nonzeros_train[1],nonzeros_train[2])
 zero_coords_train = zip(zeros_train[0],zeros_train[1],zeros_train[2])
-
-nonzeros_test = np.nonzero(y_test)
-zeros_test = np.where(y_test[:,20:532,20:532]==0)
-for i in zeros_test[1:]:
-    i += 20
-nonzero_coords_test = zip(nonzeros_test[0],nonzeros_test[1],nonzeros_test[2])
-zero_coords_test = zip(zeros_test[0],zeros_test[1],zeros_test[2])
 
 #conv net settings
 convolutional_layers = 6
@@ -160,24 +169,10 @@ class neural_network(object):
         target = np.array(target).reshape(len(target),1)
         return self.propogate(input,target) 
         
-    def predict(self,X,y,batch_size):
-        input = []
-        target = []
-        for i in range(batch_size):
-            if random.random() < .5:
-                (a,b,c) = random.choice(nonzero_coords_test)
-                input.append(X[a,b-20:b+20,c-20:c+20])
-                target.append(y[a,b,c])
-            else:
-                (a,b,c) = random.choice(zero_coords_test)
-                input.append(X[a,b-20:b+20,c-20:c+20])
-                target.append(y[a,b,c])
-        input = np.array(input).reshape(batch_size,1,40,40)
-        target = np.array(target).reshape(len(target),1)
-        prediction = self.classify(input)
+    def predict(self,X):
+        prediction = self.classify(X)
         label = np.around(prediction)
-        error = 1-float(np.sum(label==target))/len(label)
-        return prediction,error
+        return prediction,label
 
 #train
 print "building neural network"
@@ -189,6 +184,13 @@ for i in range(25000):
     cost = nn.train(X_train,y_train,batch_size)
     sys.stdout.write("step %i loss: %f \r" % (i+1, cost))
     sys.stdout.flush()
-    if (i+1)%100 == 0:
-        pred,error = nn.predict(X_test,y_test,batch_size)
-        print "test error at iteration %i: %.4f" % (i+1,error)
+    
+    if (i+1)%5000 == 0:
+        for j in range(X_test.shape[0]):
+            print 'predicting test image %i of %i' % (j, X_test.shape[0])
+            for x in range(20,532):
+                for y in range(20,532):
+                    window = X_test[j,x-20:x+20,y-20:y+20].reshape(1,1,40,40)
+                    pred,label = nn.predict(X_test)
+                    if label == 1:
+                        pass
