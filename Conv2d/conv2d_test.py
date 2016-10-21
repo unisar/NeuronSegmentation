@@ -172,9 +172,9 @@ class neural_network(object):
         return self.propogate(input,target) 
         
     def predict(self,X):
-        prediction = self.classify(X)
-        label = np.around(prediction)
-        return prediction,label
+        prediction = self.classify(X)[0][0]
+        rounded = np.around(prediction)
+        return prediction,rounded
 
 #train
 print "building neural network"
@@ -197,13 +197,13 @@ for i in range(25000):
                     sys.stdout.write("analyzing pixel (%i,%i) \r" % (x, y))
                     sys.stdout.flush()
                     window = X_test[j,x-20:x+20,y-20:y+20].reshape(1,1,40,40)
-                    pred,label = nn.predict(window)
-                    if label == 1:
-                        map[x-20,y-20]==1
+                    pred,rounded = nn.predict(window)
+                    if rounded == 1:
+                        map[x-20,y-20]=1
             map = label(map)
             regions = np.amax(map)
             regionslist = []
-            for k in range(regions):
+            for k in range(1,regions):
                 coor = np.argwhere(map==k).tolist()
                 dict = {'coordinates':coor}
                 regionslist.append(dict)
@@ -211,5 +211,5 @@ for i in range(25000):
             filename = filename[-4]+'.'+filename[-3]+'.'+filename[-2]
             allregions = {"dataset": filename,"regions":regionslist}
             final_output.append(allregions)
-        with open('submission.txt', 'w') as outfile:
+        with open('submission%i.txt' % i, 'w') as outfile:
             json.dump(final_output, outfile)
