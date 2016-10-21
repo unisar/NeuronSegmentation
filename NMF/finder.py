@@ -13,7 +13,7 @@ import neurofinder
 This is based upon the Local NMF example
 from:  https://github.com/thunder-project/thunder-extraction/blob/master/extraction/algorithms/nmf.py
 
-Instead of using all the raw images as it is, I have applied preprocessed the images
+Instead of using all the raw images as it is, I have preprocessed the images
 using median_filters and changed the block size for images when applying NMF
 '''
 class finder(object):
