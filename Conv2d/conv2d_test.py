@@ -7,6 +7,8 @@ from sklearn.preprocessing import StandardScaler
 import sys
 import glob
 import random
+from skimage.measure import label
+import json
 
 #load data
 X_train_files = sorted(glob.glob('../data/train/X_*'))
@@ -170,9 +172,9 @@ class neural_network(object):
         return self.propogate(input,target) 
         
     def predict(self,X):
-        prediction = self.classify(X)
-        label = np.around(prediction)
-        return prediction,label
+        prediction = self.classify(X)[0][0]
+        rounded = np.around(prediction)
+        return prediction,rounded
 
 #train
 print "building neural network"
@@ -185,12 +187,29 @@ for i in range(25000):
     sys.stdout.write("step %i loss: %f \r" % (i+1, cost))
     sys.stdout.flush()
     
-    if (i+1)%5000 == 0:
+    if (i+1)%5000 == 0 and i > 9000:
+        final_output = []
         for j in range(X_test.shape[0]):
-            print 'predicting test image %i of %i' % (j, X_test.shape[0])
+            print 'predicting test image %i of %i' % (j+1, X_test.shape[0])
+            map = np.zeros((512,512))
             for x in range(20,532):
                 for y in range(20,532):
+                    sys.stdout.write("analyzing pixel (%i,%i) \r" % (x, y))
+                    sys.stdout.flush()
                     window = X_test[j,x-20:x+20,y-20:y+20].reshape(1,1,40,40)
-                    pred,label = nn.predict(X_test)
-                    if label == 1:
-                        pass
+                    pred,rounded = nn.predict(window)
+                    if rounded == 1:
+                        map[x-20,y-20]=1
+            map = label(map)
+            regions = np.amax(map)
+            regionslist = []
+            for k in range(1,regions):
+                coor = np.argwhere(map==k).tolist()
+                dict = {'coordinates':coor}
+                regionslist.append(dict)
+            filename = X_test_files[j].split('.')
+            filename = filename[-4]+'.'+filename[-3]+'.'+filename[-2]
+            allregions = {"dataset": filename,"regions":regionslist}
+            final_output.append(allregions)
+        with open('submission%i.txt' % i, 'w') as outfile:
+            json.dump(final_output, outfile)
