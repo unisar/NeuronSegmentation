@@ -33,7 +33,7 @@ class finder(object):
 
     def read_regions(self,file_path):
         print ("Reading regions of: %s" % file_path)
-        with open(file_path + 'regions/regions.json', 'r') as f:
+        with open(file_path + '/regions/regions.json', 'r') as f:
             regions = json.load(f)
         
         #list of lists of coordinates
