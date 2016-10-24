@@ -60,11 +60,11 @@ nonzero_coords_train = zip(nonzeros_train[0],nonzeros_train[1],nonzeros_train[2]
 zero_coords_train = zip(zeros_train[0],zeros_train[1],zeros_train[2])
 
 #conv net settings
-convolutional_layers = 4
-feature_maps = [1,50,50,50,50]
-filter_shapes = [(3,3),(3,3),(3,3),(3,3)]
+convolutional_layers = 6
+feature_maps = [1,50,50,50,100,100,100]
+filter_shapes = [(5,5),(5,5),(3,3),(3,3),(3,3),(3,3)]
 feedforward_layers = 1
-feedforward_nodes = [1000]
+feedforward_nodes = [2000]
 classes = 400
 
 class convolutional_layer(object):
@@ -73,6 +73,8 @@ class convolutional_layer(object):
         self.w = theano.shared(self.ortho_weights(output_maps,input_maps,filter_height,filter_width),borrow=True)
         self.b = theano.shared(np.zeros((output_maps,), dtype=theano.config.floatX),borrow=True)
         self.conv_out = conv2d(input=self.input, filters=self.w, border_mode='half')
+        if maxpool:
+            self.conv_out = downsample.max_pool_2d(self.conv_out, ds=maxpool, ignore_border=True)
         self.output = T.nnet.elu(self.conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
     def ortho_weights(self,chan_out,chan_in,filter_h,filter_w):
         bound = np.sqrt(6./(chan_in*filter_h*filter_w + chan_out*filter_h*filter_w))
@@ -111,9 +113,12 @@ class neural_network(object):
         self.convolutional_layers = []
         self.convolutional_layers.append(convolutional_layer(self.input,feature_maps[1],feature_maps[0],filter_shapes[0][0],filter_shapes[0][1]))
         for i in range(1,convolutional_layers):
-            self.convolutional_layers.append(convolutional_layer(self.convolutional_layers[i-1].output,feature_maps[i+1],feature_maps[i],filter_shapes[i][0],filter_shapes[i][1]))
+            if i==3:
+                self.convolutional_layers.append(convolutional_layer(self.convolutional_layers[i-1].output,feature_maps[i+1],feature_maps[i],filter_shapes[i][0],filter_shapes[i][1],maxpool=(2,2)))
+            else:
+                self.convolutional_layers.append(convolutional_layer(self.convolutional_layers[i-1].output,feature_maps[i+1],feature_maps[i],filter_shapes[i][0],filter_shapes[i][1]))
         self.feedforward_layers = []
-        self.feedforward_layers.append(feedforward_layer(self.convolutional_layers[-1].output.flatten(2),80000,feedforward_nodes[0]))
+        self.feedforward_layers.append(feedforward_layer(self.convolutional_layers[-1].output.flatten(2),40000,feedforward_nodes[0]))
         for i in range(1,feedforward_layers):
             self.feedforward_layers.append(feedforward_layer(self.feedforward_layers[i-1].output,feedforward_nodes[i-1],feedforward_nodes[i]))
         self.output_layer = feedforward_layer(self.feedforward_layers[-1].output,feedforward_nodes[-1],classes)
@@ -181,7 +186,7 @@ for i in range(12500):
     sys.stdout.write("step %i loss: %f \r" % (i+1, cost))
     sys.stdout.flush()
     
-    if (i+1)%2500 == 0 and i > 4000:
+    if (i+1)%2500 == 0 and i > 6000:
         final_output = []
         for j in range(X_test.shape[0]):
             print 'predicting test image %i of %i' % (j+1, X_test.shape[0])
