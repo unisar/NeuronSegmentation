@@ -59,7 +59,7 @@ zero_coords_test = zip(zeros_test[0],zeros_test[1],zeros_test[2])
 #conv net settings
 convolutional_layers = 6
 feature_maps = [1,50,50,50,100,100,100]
-filter_shapes = [(5,5),(5,5),(3,3),(3,3),(3,3),(3,3)]
+filter_shapes = [(3,3),(3,3),(3,3),(3,3),(3,3),(3,3)]
 feedforward_layers = 1
 feedforward_nodes = [2000]
 classes = 400

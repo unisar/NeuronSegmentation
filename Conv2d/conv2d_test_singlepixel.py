@@ -62,7 +62,7 @@ zero_coords_train = zip(zeros_train[0],zeros_train[1],zeros_train[2])
 #conv net settings
 convolutional_layers = 6
 feature_maps = [1,50,50,50,100,100,100]
-filter_shapes = [(5,5),(5,5),(3,3),(3,3),(3,3),(3,3)]
+filter_shapes = [(3,3),(3,3),(3,3),(3,3),(3,3),(3,3)]
 feedforward_layers = 1
 feedforward_nodes = [2000]
 classes = 1
@@ -225,5 +225,5 @@ for j in range(X_test.shape[0]):
     filename = filename[-4]+'.'+filename[-3]+'.'+filename[-2]
     allregions = {"dataset": filename,"regions":regionslist}
     final_output.append(allregions)
-with open('submission%i.txt' % i, 'w') as outfile:
+with open('submission.txt', 'w') as outfile:
     json.dump(final_output, outfile)
