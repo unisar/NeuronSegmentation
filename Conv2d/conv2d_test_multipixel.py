@@ -161,15 +161,31 @@ class neural_network(object):
         for i in range(batch_size):
             if random.random() < .5:
                 (a,b,c) = random.choice(nonzero_coords_train)
-                input.append(X[a,b-20:b+20,c-20:c+20])
-                target.append(y[a,b-10:b+10,c-10:c+10])
+                X_window = X[a,b-20:b+20,c-20:c+20]
+                y_window = y[a,b-10:b+10,c-10:c+10]
+                if random.random() < .5:
+                    X_window = X_window[::-1,:]
+                    y_window = y_window[::-1,:]
+                if random.random() < .5:
+                    X_window = X_window[:,::-1]
+                    y_window = y_window[:,::-1]
+                input.append(X_window)
+                target.append(y_window)
             else:
                 (a,b,c) = random.choice(zero_coords_train)
-                input.append(X[a,b-20:b+20,c-20:c+20])
-                target.append(y[a,b-10:b+10,c-10:c+10])
+                X_window = X[a,b-20:b+20,c-20:c+20]
+                y_window = y[a,b-10:b+10,c-10:c+10]
+                if random.random() < .5:
+                    X_window = X_window[::-1,:]
+                    y_window = y_window[::-1,:]
+                if random.random() < .5:
+                    X_window = X_window[:,::-1]
+                    y_window = y_window[:,::-1]
+                input.append(X_window)
+                target.append(y_window)
         input = np.array(input).reshape(batch_size,1,40,40)
         target = np.array(target).reshape(len(target),400)
-        return self.propogate(input,target) 
+        return self.propogate(input,target)
         
     def predict(self,X):
         prediction = self.classify(X)
@@ -181,36 +197,37 @@ nn = neural_network(convolutional_layers,feature_maps,filter_shapes,feedforward_
 
 batch_size = 100
 
-for i in range(12500):
+for i in range(10000):
     cost = nn.train(X_train,y_train,batch_size)
     sys.stdout.write("step %i loss: %f \r" % (i+1, cost))
     sys.stdout.flush()
     
-    if (i+1)%2500 == 0 and i > 6000:
-        final_output = []
-        for j in range(X_test.shape[0]):
-            print 'predicting test image %i of %i' % (j+1, X_test.shape[0])
-            map = np.zeros((512,512))
-            probs = np.zeros((512,512))
-            for x in range(30,522):
-                for y in range(30,522):
-                    sys.stdout.write("analyzing pixel (%i,%i) \r" % (x, y))
-                    sys.stdout.flush()
-                    window = X_test[j,x-20:x+20,y-20:y+20].reshape(1,1,40,40)
-                    pred = nn.predict(window).reshape(20,20)
-                    probs[x-30:x-10,y-30:y-10]+=pred
-                    map[x-30:x-10,y-30:y-10]+=1
-            final = np.around(probs/map)
-            final = label(final)
-            regions = np.amax(final)
-            regionslist = []
-            for k in range(1,regions):
-                coor = np.argwhere(final==k).tolist()
-                dict = {'coordinates':coor}
-                regionslist.append(dict)
-            filename = X_test_files[j].split('.')
-            filename = filename[-4]+'.'+filename[-3]+'.'+filename[-2]
-            allregions = {"dataset": filename,"regions":regionslist}
-            final_output.append(allregions)
-        with open('submission%i.txt' % (i+1), 'w') as outfile:
-            json.dump(final_output, outfile)
+#predict
+final_output = []
+for j in range(X_test.shape[0]):
+    print 'predicting test image %i of %i' % (j+1, X_test.shape[0])
+    map = np.zeros((512,512))
+    probs = np.zeros((512,512))
+    for x in range(30,522):
+        for y in range(30,522):
+            sys.stdout.write("analyzing pixel (%i,%i) \r" % (x, y))
+            sys.stdout.flush()
+            window = X_test[j,x-20:x+20,y-20:y+20].reshape(1,1,40,40)
+            pred = nn.predict(window).reshape(20,20)
+            probs[x-30:x-10,y-30:y-10]+=pred
+            map[x-30:x-10,y-30:y-10]+=1
+    final = probs/map
+    np.save('probs_multipixel_%i' % j,final)
+    final = label(np.around(final))
+    regions = np.amax(final)
+    regionslist = []
+    for k in range(1,regions):
+        coor = np.argwhere(final==k).tolist()
+        dict = {'coordinates':coor}
+        regionslist.append(dict)
+    filename = X_test_files[j].split('.')
+    filename = filename[-4]+'.'+filename[-3]+'.'+filename[-2]
+    allregions = {"dataset": filename,"regions":regionslist}
+    final_output.append(allregions)
+with open('submission.txt', 'w') as outfile:
+    json.dump(final_output, outfile)

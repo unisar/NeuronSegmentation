@@ -61,7 +61,7 @@ zero_coords_train = zip(zeros_train[0],zeros_train[1],zeros_train[2])
 
 #conv net settings
 convolutional_layers = 6
-feature_maps = [1,40,40,40,80,80,80]
+feature_maps = [1,50,50,50,100,100,100]
 filter_shapes = [(5,5),(5,5),(3,3),(3,3),(3,3),(3,3)]
 feedforward_layers = 1
 feedforward_nodes = [2000]
@@ -118,7 +118,7 @@ class neural_network(object):
             else:
                 self.convolutional_layers.append(convolutional_layer(self.convolutional_layers[i-1].output,feature_maps[i+1],feature_maps[i],filter_shapes[i][0],filter_shapes[i][1]))
         self.feedforward_layers = []
-        self.feedforward_layers.append(feedforward_layer(self.convolutional_layers[-1].output.flatten(2),32000,feedforward_nodes[0]))
+        self.feedforward_layers.append(feedforward_layer(self.convolutional_layers[-1].output.flatten(2),40000,feedforward_nodes[0]))
         for i in range(1,feedforward_layers):
             self.feedforward_layers.append(feedforward_layer(self.feedforward_layers[i-1].output,feedforward_nodes[i-1],feedforward_nodes[i]))
         self.output_layer = feedforward_layer(self.feedforward_layers[-1].output,feedforward_nodes[-1],classes)
@@ -161,12 +161,24 @@ class neural_network(object):
         for i in range(batch_size):
             if random.random() < .5:
                 (a,b,c) = random.choice(nonzero_coords_train)
-                input.append(X[a,b-20:b+20,c-20:c+20])
-                target.append(y[a,b,c])
+                X_window = X[a,b-20:b+20,c-20:c+20]
+                y_window = y[a,b,c]
+                if random.random() < .5:
+                    X_window = X_window[::-1,:]
+                if random.random() < .5:
+                    X_window = X_window[:,::-1]
+                input.append(X_window)
+                target.append(y_window)
             else:
                 (a,b,c) = random.choice(zero_coords_train)
-                input.append(X[a,b-20:b+20,c-20:c+20])
-                target.append(y[a,b,c])
+                X_window = X[a,b-20:b+20,c-20:c+20]
+                y_window = y[a,b,c]
+                if random.random() < .5:
+                    X_window = X_window[::-1,:]
+                if random.random() < .5:
+                    X_window = X_window[:,::-1]
+                input.append(X_window)
+                target.append(y_window)
         input = np.array(input).reshape(batch_size,1,40,40)
         target = np.array(target).reshape(len(target),1)
         return self.propogate(input,target) 
@@ -182,34 +194,36 @@ nn = neural_network(convolutional_layers,feature_maps,filter_shapes,feedforward_
 
 batch_size = 100
 
-for i in range(25000):
+for i in range(10000):
     cost = nn.train(X_train,y_train,batch_size)
     sys.stdout.write("step %i loss: %f \r" % (i+1, cost))
     sys.stdout.flush()
-    
-    if (i+1)%5000 == 0 and i > 9000:
-        final_output = []
-        for j in range(X_test.shape[0]):
-            print 'predicting test image %i of %i' % (j+1, X_test.shape[0])
-            map = np.zeros((512,512))
-            for x in range(20,532):
-                for y in range(20,532):
-                    sys.stdout.write("analyzing pixel (%i,%i) \r" % (x, y))
-                    sys.stdout.flush()
-                    window = X_test[j,x-20:x+20,y-20:y+20].reshape(1,1,40,40)
-                    pred,rounded = nn.predict(window)
-                    if rounded == 1:
-                        map[x-20,y-20]=1
-            map = label(map)
-            regions = np.amax(map)
-            regionslist = []
-            for k in range(1,regions):
-                coor = np.argwhere(map==k).tolist()
-                dict = {'coordinates':coor}
-                regionslist.append(dict)
-            filename = X_test_files[j].split('.')
-            filename = filename[-4]+'.'+filename[-3]+'.'+filename[-2]
-            allregions = {"dataset": filename,"regions":regionslist}
-            final_output.append(allregions)
-        with open('submission%i.txt' % i, 'w') as outfile:
-            json.dump(final_output, outfile)
+
+final_output = []
+for j in range(X_test.shape[0]):
+    print 'predicting test image %i of %i' % (j+1, X_test.shape[0])
+    map = np.zeros((512,512))
+    probs = np.zeros((512,512))
+    for x in range(20,532):
+        for y in range(20,532):
+            sys.stdout.write("analyzing pixel (%i,%i) \r" % (x, y))
+            sys.stdout.flush()
+            window = X_test[j,x-20:x+20,y-20:y+20].reshape(1,1,40,40)
+            pred,rounded = nn.predict(window)
+            probs[x-20,y-20]=pred
+            if rounded == 1:
+                map[x-20,y-20]=1
+    np.save('probs_singlepixel_%i' % j,probs)
+    map = label(map)
+    regions = np.amax(map)
+    regionslist = []
+    for k in range(1,regions):
+        coor = np.argwhere(map==k).tolist()
+        dict = {'coordinates':coor}
+        regionslist.append(dict)
+    filename = X_test_files[j].split('.')
+    filename = filename[-4]+'.'+filename[-3]+'.'+filename[-2]
+    allregions = {"dataset": filename,"regions":regionslist}
+    final_output.append(allregions)
+with open('submission%i.txt' % i, 'w') as outfile:
+    json.dump(final_output, outfile)

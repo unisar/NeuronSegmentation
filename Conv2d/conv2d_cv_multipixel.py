@@ -158,12 +158,28 @@ class neural_network(object):
         for i in range(batch_size):
             if random.random() < .5:
                 (a,b,c) = random.choice(nonzero_coords_train)
-                input.append(X[a,b-20:b+20,c-20:c+20])
-                target.append(y[a,b-10:b+10,c-10:c+10])
+                X_window = X[a,b-20:b+20,c-20:c+20]
+                y_window = y[a,b-10:b+10,c-10:c+10]
+                if random.random() < .5:
+                    X_window = X_window[::-1,:]
+                    y_window = y_window[::-1,:]
+                if random.random() < .5:
+                    X_window = X_window[:,::-1]
+                    y_window = y_window[:,::-1]
+                input.append(X_window)
+                target.append(y_window)
             else:
                 (a,b,c) = random.choice(zero_coords_train)
-                input.append(X[a,b-20:b+20,c-20:c+20])
-                target.append(y[a,b-10:b+10,c-10:c+10])
+                X_window = X[a,b-20:b+20,c-20:c+20]
+                y_window = y[a,b-10:b+10,c-10:c+10]
+                if random.random() < .5:
+                    X_window = X_window[::-1,:]
+                    y_window = y_window[::-1,:]
+                if random.random() < .5:
+                    X_window = X_window[:,::-1]
+                    y_window = y_window[:,::-1]
+                input.append(X_window)
+                target.append(y_window)
         input = np.array(input).reshape(batch_size,1,40,40)
         target = np.array(target).reshape(len(target),400)
         return self.propogate(input,target)
@@ -193,7 +209,7 @@ nn = neural_network(convolutional_layers,feature_maps,filter_shapes,feedforward_
 
 batch_size = 100
 
-for i in range(25000):
+for i in range(12000):
     cost = nn.train(X_train,y_train,batch_size)
     sys.stdout.write("step %i loss: %f \r" % (i+1, cost))
     sys.stdout.flush()
