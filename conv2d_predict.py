@@ -24,7 +24,7 @@ import json
 
 # verify the required arguments are given
 if (len(sys.argv) < 3):
-    print 'Usage: python conv2d_crossvalidation.py <PATH_TO_PREPROCESSED_TRAIN_DATA> <PATH_TO_PREPROCESSED_TEST_DATA>'
+    print 'Usage: python conv2d_predict.py <PATH_TO_PREPROCESSED_TRAIN_DATA> <PATH_TO_PREPROCESSED_TEST_DATA>'
     exit(1)
 
 #load data
