@@ -39,7 +39,7 @@ We used the following architecture for our convolutional network:
 - 3 convolutional layers using 3x3 filter shape, 50 feature maps each, ELU activation
 - maxpool with 2x2 window
 - 3 convolutional layers using 3x3 filter shape, 100 feature maps each, ELU activation
-- feedforward layer of 2000 nodes, ELU activation
+- feedforward layer of 2000 nodes, tanh activation
 - output layer of 400 nodes representing 20x20 pixels in center of window
 - adam gradient descent
 - orthogonal weight initialization
