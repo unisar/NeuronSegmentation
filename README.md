@@ -5,8 +5,8 @@ Calcium imaging is a common technique used to capture images of neuron activity.
 Once these images are captured, researchers often have to go through the time-consuming
 task of manually identifying where the neurons are located in each image.
 
-![movie](https://github.com/eds-uga/eatingnails-project4/blob/master/extras/movie.gif)
-![zooming](https://github.com/eds-uga/eatingnails-project4/blob/master/extras/zooming.gif)
+![movie](https://github.com/eds-uga/eatingnails-project4/blob/master/Extra/movie.gif)
+![zooming](https://github.com/eds-uga/eatingnails-project4/blob/master/Extra/zooming.gif)
 
 This exercise attempts to automate the process of neuron detection in calcium images
 using machine learning techniques. The dataset used for this exercise consists of 19 training
@@ -79,7 +79,7 @@ datasets that you wish to train/test on.
 
 - **play images as a movie:** python play_animation.py \<PATH_TO_NEUROFINDER_FOLDER\>
 - **preprocess images:** python preprocessing.py \<PATH_TO_NEUROFINDER_FOLDER\> \<PATH_TO_OUTPUT_FOLDER\>
-- **run conv net with cross validation:** python conv2d_predict.py \<PATH_TO_PREPROCESSED_TRAIN_DATA\> \<PATH_TO_PREPROCESSED_TEST_DATA\>
-- **use conv net to predict test labels:** python conv2d_crossvalidation.py \<PATH_TO_PREPROCESSED_TRAIN_DATA\>
+- **run conv net with cross validation:** python conv2d_crossvalidation.py \<PATH_TO_PREPROCESSED_TRAIN_DATA\>
+- **use conv net to predict test labels:** python conv2d_predict.py \<PATH_TO_PREPROCESSED_TRAIN_DATA\> \<PATH_TO_PREPROCESSED_TEST_DATA\>
 
 Predictions are saved after 10000 iterations to *submission.json*.
