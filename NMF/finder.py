@@ -26,7 +26,7 @@ class finder(object):
     def read_images(self,file_path):
         print ("Reading images from: %s" % file_path)
         images = td.images.fromtif(file_path + '/images', ext='tiff', stop=self.no_of_files)
-        imgs = images.median_filter(size=4)
+        imgs = images.median_filter(size=3)
         filtered_imgs = imgs.toarray()
         m2 = np.mean(filtered_imgs,axis=0)
         return imgs, filtered_imgs, m2
@@ -58,7 +58,7 @@ class finder(object):
             imgs,filtered_imgs, sumImgs  = self.read_images(f)
 
             print ("Applying NMF to: %s" % f)
-            algorithm = NMF(k=5, percentile=99, max_iter=55, overlap=0.1)
+            algorithm = NMF(k=5, percentile=99, max_iter=100)
             model = algorithm.fit(filtered_imgs,chunk_size=(30,30),padding=(25,25))
             merged = model.merge(0.1)
             nmask = self.mask_image(merged.regions,sumImgs,'blue')
