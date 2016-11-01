@@ -61,6 +61,25 @@ The model takes approximately three hours to run on a single NVIDIA GTX 970 GPU.
 
 ## NonNegative Matrix Factorization Model
 
+### Preprocessing
+For each set of images, we spatially filter images using a median filter of size 3*3, which
+reduces the noise. The original images of size 512x512 are chunked into blocks of 
+size 30*30 with a padding of 25*25 pixels. NMF is applied to smaller blocks of
+
+### NMF Configuration
+The NMF model is based on the the following local NMF model: https://github.com/thunder-project/thunder-extraction
+Changes that we implemented:
+- The original implementation read the images as it is, without filtering out any noise in the images
+- Before feeding the images to NMF, we tried to apply: Gaussian, Median filters. But, eventually settled on Median filters as we wanted to get rid of the salt-n-pepper noise.
+- We did not merge the overlapping regions which the original implementation does.
+- Also, since, we are already performing median filtering when preprocessing the images, we got rid of the median filtering after finding the k components from the original implementation.
+- Internally, sklearn's NMF is called with the following parameters:
+-- no. of components = 5
+-- max no. iterations = 100
+-- l1_ratio (regularization mixing parameter) = .5 
+-- alpha (Constant that multiplies the regularization terms) = 0.05
+-- tol (Tolerance Value) = 5e-3
+
 
 ## Instructions to Run Models
 
