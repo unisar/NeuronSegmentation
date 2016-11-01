@@ -74,11 +74,11 @@ Changes that we implemented:
 - We did not merge the overlapping regions which the original implementation does.
 - Also, since, we are already performing median filtering when preprocessing the images, we got rid of the median filtering after finding the k components from the original implementation.
 - Internally, sklearn's NMF is called with the following parameters:
--- no. of components = 5
--- max no. iterations = 100
--- l1_ratio (regularization mixing parameter) = .5 
--- alpha (Constant that multiplies the regularization terms) = 0.05
--- tol (Tolerance Value) = 5e-3
+  - no. of components = 5
+  - max no. iterations = 100
+  - l1_ratio (regularization mixing parameter) = .5 
+  - alpha (Constant that multiplies the regularization terms) = 0.05
+  - tol (Tolerance Value) = 5e-3
 
 
 ## Instructions to Run Models
