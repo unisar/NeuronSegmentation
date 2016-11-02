@@ -67,7 +67,7 @@ reduces the noise. The original images of size 512x512 are chunked into blocks o
 size 30*30 with a padding of 25*25 pixels. NMF is applied to smaller blocks of
 
 ### NMF Configuration
-The NMF model is based on the the following local NMF model: https://github.com/thunder-project/thunder-extraction
+The NMF model is based on the the following local NMF implementation: https://github.com/thunder-project/thunder-extraction.
 Changes that we implemented:
 - The original implementation read the images as it is, without filtering out any noise in the images
 - Before feeding the images to NMF, we tried to apply: Gaussian, Median filters. But, eventually settled on Median filters as we wanted to get rid of the salt-n-pepper noise.
@@ -102,3 +102,22 @@ datasets that you wish to train/test on.
 - **use conv net to predict test labels:** python conv2d_predict.py \<PATH_TO_PREPROCESSED_TRAIN_DATA\> \<PATH_TO_PREPROCESSED_TEST_DATA\>
 
 Predictions are saved after 10000 iterations to *submission.json*.
+
+
+### NonNegative Matrix Factorization
+Ensure the following Python packages are installed on your instance:
+- numpy
+- sklearn
+- skimage
+- scipy
+- matplotlib
+- regional
+- thunder
+
+- **to use nmf model to predict test regions:
+  - cd into NMF/extraction
+  - python finder.py 'comma-separated list of file names' no-of-images-to-consider
+  Eg: python finder.py '../../neurofinder.00.00.test,../../neurofinder.00.01.test' 5
+
+Predictions are saved in output.json in NMF/extraction
+

@@ -55,7 +55,7 @@ class finder(object):
 
     def applyNMF(self,isPlot, isTrain):
         results = []
-        for f in self.file_names:    
+        for f in self.file_names:   
             imgs,filtered_imgs, sumImgs  = self.read_images(f)
 
             print ("Applying NMF to: %s" % f)
@@ -83,20 +83,14 @@ class finder(object):
 
 def main():
 
-    test_files = ['/Volumes/Mac-B/neurofinder.00.00.test']
-    '''
-    [
-                    './neurofinder.00.00.test','./neurofinder.00.01.test','./neurofinder.01.00.test',
-                    './neurofinder.01.01.test','./neurofinder.02.00.test','./neurofinder.02.01.test',
-                    './neurofinder.03.00.test','./neurofinder.04.00.test','./neurofinder.04.01.test'
-                ]
-    '''            
-    n = finder(test_files,5)
+    test_file_names = sys.argv[1].split(',') 
+    no_of_files = sys.argv[2]
+    n = finder(test_file_names,int(no_of_files))
+    print n.file_names
     results = n.applyNMF(False, False)
     with open('output.json', 'w') as f:
-        f.write(json.dumps(results))
-
-
+            f.write(json.dumps(results))
+    
 if __name__ == "__main__":
     main()      
 
