@@ -62,17 +62,14 @@ The model takes approximately three hours to run on a single NVIDIA GTX 970 GPU.
 ## NonNegative Matrix Factorization Model
 
 ### Preprocessing
-For each set of images, we spatially filter images using a median filter of size 3*3, which
-reduces the noise. The original images of size 512x512 are chunked into blocks of 
-size 30*30 with a padding of 25*25 pixels. NMF is applied to smaller blocks of
+For each set of images, we spatially filter images using a median filter of size 3x3, which reduces the noise. The original images of size 512x512 are chunked into blocks of size 30x30 with a padding of 25x25 pixels. NMF is applied on these smaller blocks.
 
 ### NMF Configuration
 The NMF model is based on the the following local NMF implementation: https://github.com/thunder-project/thunder-extraction.
 Changes that we implemented:
-- The original implementation read the images as it is, without filtering out any noise in the images
-- Before feeding the images to NMF, we tried to apply: Gaussian, Median filters. But, eventually settled on Median filters as we wanted to get rid of the salt-n-pepper noise.
-- We did not merge the overlapping regions which the original implementation does.
-- Also, since, we are already performing median filtering when preprocessing the images, we got rid of the median filtering after finding the k components from the original implementation.
+- The original implementation read the images as it is, without filtering out any noise in the images. Before feeding the images to NMF, we tried to apply: Gaussian, Median filters. But, eventually settled on Median filters as we wanted to get rid of the salt-n-pepper noise.
+- We did not merge the overlapping regions, which the original implementation does.
+- Since, we are already performing median filtering when preprocessing the images, we got rid of the median filtering after finding the k components from the original implementation.
 - Internally, sklearn's NMF is called with the following parameters:
   - no. of components = 5
   - max no. iterations = 100
@@ -114,10 +111,11 @@ Ensure the following Python packages are installed on your instance:
 - regional
 - thunder
 
-- **to use nmf model to predict test regions:
+- to use nmf model to predict test regions:
   - cd into NMF/extraction
   - python finder.py 'comma-separated list of file names' no-of-images-to-consider
-  Eg: python finder.py '../../neurofinder.00.00.test,../../neurofinder.00.01.test' 5
+    
+    Eg: python finder.py '../../neurofinder.00.00.test,../../neurofinder.00.01.test' 5
 
 Predictions are saved in output.json in NMF/extraction
 
