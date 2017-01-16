@@ -5,8 +5,8 @@ Calcium imaging is a common technique used to capture images of neuron activity.
 Once these images are captured, researchers often have to go through the time-consuming
 task of manually identifying where the neurons are located in each image.
 
-![movie](https://github.com/unisar/NeuronSegmentation/movie.gif)
-![zooming](https://github.com/unisar/NeuronSegmentation/zooming.gif)
+![movie](https://github.com/unisar/NeuronSegmentation/blob/master/movie.gif)
+![zooming](https://github.com/unisar/NeuronSegmentation/blob/master/zooming.gif)
 
 This exercise attempts to automate the process of neuron detection in calcium images
 using machine learning techniques. The dataset used for this exercise consists of 19 training
